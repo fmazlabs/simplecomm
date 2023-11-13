@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Ecommerce App</title>
+</head>
+<body>
+    <h1>Welcome to our simple ecommerce app!</h1>
+    <h2>Our Products:</h2>
+    <ul id="productsList"></ul>
+
+    <script>
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                const productsList = document.getElementById('productsList');
+                data.forEach(product => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${product.name} - $${product.price}`;
+                    productsList.appendChild(listItem);
+                });
+            })
+            .catch(error => console.error('Error fetching products:', error));
+    </script>
+</body>
+</html>
