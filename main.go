@@ -1,81 +1,60 @@
 package main
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"io/ioutil"
+	"encoding/json"
+	"fmt"
 	"log"
-)
-
-import (
-
 	"net/http"
-	"github.com/gin-gonic/gin"
-
+	"os"
 )
 
 type Product struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
-	Price float64 `json:"price"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Price       float64 `json:"price"`
 }
 
 var products []Product
 
-func GetProducts(w http.ResponseWriter, r *http.Request) {
+func init() {
+	products = []Product{
+		{
+			ID:          "1",
+			Name:        "Product 1",
+			Description: "Description for product 1",
+			Price:       100.0,
+		},
+		{
+			ID:          "2",
+			Name:        "Product 2",
+			Description: "Description for product 2",
+			Price:       200.0,
+		},
+	}
+}
+
+func main() {
+	http.HandleFunc("/", handleRequest)
+	http.HandleFunc("/api/products", handleProducts)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Starting server on port %s...\n", port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatal("Error starting server: ", err)
+	}
+}
+
+func handleRequest(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "index.html")
+}
+
+func handleProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)
-}
-
-func GetProduct(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id := params["id"]
-
-	for _, item := range products {
-		if item.ID == id {
-			json.NewEncoder(w).Encode(item)
-			return
-		}
-	}
-
-	json.NewEncoder(w).Encode(&Product{})
-}
-
-func main() {
-	products = append(products, Product{ID: "1", Name: "Product 1", Price: 100})
-	products = append(products, Product{ID: "2", Name: "Product 2", Price: 200})
-
-	router := mux.NewRouter()
-	router.HandleFunc("/api/products", GetProducts).Methods("GET")
-	router.HandleFunc("/api/products/{id}", GetProduct).Methods("GET")
-
-	htmlBytes, err := ioutil.ReadFile("web/dist/index.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	router.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(htmlBytes)
-	})
-
-	log.Fatal(http.ListenAndServe(":8080", router))
-}
-
-func main() {
-
-	router := gin.Default()
-
-
-	router.Static("/web", "./web")
-
-
-	router.GET("/", func(c *gin.Context) {
-
-		c.File("./web/index.html")
-
-	})
-
-
-	router.Run(":8080")
-
 }
