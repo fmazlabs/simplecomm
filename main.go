@@ -7,6 +7,13 @@ import (
 	"log"
 )
 
+import (
+
+	"net/http"
+	"github.com/gin-gonic/gin"
+
+)
+
 type Product struct {
 	ID string `json:"id"`
 	Name string `json:"name"`
@@ -52,4 +59,23 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func main() {
+
+	router := gin.Default()
+
+
+	router.Static("/web", "./web")
+
+
+	router.GET("/", func(c *gin.Context) {
+
+		c.File("./web/index.html")
+
+	})
+
+
+	router.Run(":8080")
+
 }
